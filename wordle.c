@@ -1,4 +1,5 @@
 #include <ctype.h>
+#include <stdio.h>
 #include <string.h>
 
 #include "raylib.h"
@@ -14,6 +15,9 @@ typedef enum {
 	TILE_PRESENT,
 	TILE_CORRECT
 } TileState;
+
+// TODO: Prevent duplicate wrong guesses
+// TODO: Check if word is a valid guess
 
 int main() {
 
@@ -36,6 +40,8 @@ int main() {
 	int gameWon = 0;
 	int gameOver = 0;
 
+	int duplicateGuesses = 0;
+
 	while(!WindowShouldClose()) {
 
 		if (!gameOver) {
@@ -52,6 +58,14 @@ int main() {
 			}
 
 			if (IsKeyPressed(KEY_ENTER) && currentCol == WORD_LEN) {
+
+				for (int i = currentRow-1; i >= 0; i--) {
+					if (memcmp(guesses[currentRow], guesses[i], sizeof(guesses[i])) == 0) {
+						//printf("'%s' is the same as '%s'.\n", guesses[currentRow], guesses[i]);
+						duplicateGuesses += 1;
+					}
+				}
+
 				for (int i = 0; i < WORD_LEN; i++) {
 					feedback[currentRow][i] = TILE_ABSENT;
 				}
@@ -160,6 +174,9 @@ int main() {
 
 		} else {
 			DrawText("Guess a 5-letter word. Press Enter to submit.", 60, gridY + gridHeight + 40, 20, BLACK);
+			if (duplicateGuesses) {
+				DrawText(TextFormat("%d duplicate guesses present.", duplicateGuesses), 120, gridY + gridHeight + 80, 24, RED);
+			}
 		}
 		EndDrawing();
 	}
